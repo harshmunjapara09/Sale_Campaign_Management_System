@@ -1,5 +1,6 @@
 package com.Sale_Campaign_Management_System.Controller;
 
+import com.Sale_Campaign_Management_System.Model.Campaigns;
 import com.Sale_Campaign_Management_System.Model.Product;
 import com.Sale_Campaign_Management_System.Model.dto.ProductDTO;
 import com.Sale_Campaign_Management_System.Service.ProductService;
@@ -24,4 +25,6 @@ public class ProductContoller {
     public ProductDTO get(@RequestParam Integer page, Integer pageSize){
         return productService.get(page,pageSize);
     }
+
+
 }
