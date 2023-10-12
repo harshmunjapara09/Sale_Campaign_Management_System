@@ -22,46 +22,44 @@ public class ProductService {
     }
 
     public ProductDTO get(Integer page, Integer pageSize) {
+        Page<Product> productPage = productRepo.findAll(PageRequest.of(page - 1, pageSize));
 
-        List<Product> getAll = productRepo.findAll();
-        int pageNo = 1;
-        List<Product> list = new ArrayList<>();
-        for (Product p : getAll) {
-            if (list.size() == pageSize) {
-                if (pageNo == page) {
-                    break;
-                }
-                pageNo++;
-                list.clear();
-            }
-            list.add(p);
-        }
-
-        double result = (double) getAll.size() / pageSize;
-        int totalpage = (int) Math.ceil(result);
+        List<Product> productList = productPage.getContent();
+        int totalPage = ((Page<?>) productPage).getTotalPages();
 
         ProductDTO ans = new ProductDTO();
-        ans.setProduct(list);
+        ans.setProduct(productList);
         ans.setPage(page);
-        ans.setTotalPage(totalpage);
+        ans.setTotalPage(totalPage);
         ans.setPageSize(pageSize);
-        return ans;
 
-//        Page<Product> productPage = productRepo.findAll(PageRequest.of(page - 1, pageSize));
-//
-//        List<Product> productList = productPage.getContent();
-//        int totalPage = ((Page<?>) productPage).getTotalPages();
-//
-//        ProductDTO ans = new ProductDTO();
-//        ans.setProduct(productList);
-//        ans.setPage(page);
-//        ans.setTotalPage(totalPage);
-//        ans.setPageSize(pageSize);
-//
-//        return ans;
+        return ans;
     }
 
-//    public Campaigns sale(Campaigns c) {
+
+//        List<Product> getAll = productRepo.findAll();
+//        int pageNo = 1;
+//        List<Product> list = new ArrayList<>();
+//        for (Product p : getAll) {
+//            if (list.size() == pageSize) {
+//                if (pageNo == page) {
+//                    break;
+//                }
+//                pageNo++;
+//                list.clear();
+//            }
+//            list.add(p);
+//        }
 //
-//    }
+//        double result = (double) getAll.size() / pageSize;
+//        int totalpage = (int) Math.ceil(result);
+//
+//        ProductDTO ans = new ProductDTO();
+//        ans.setProduct(list);
+//        ans.setPage(page);
+//        ans.setTotalPage(totalpage);
+//        ans.setPageSize(pageSize);
+//        return ans;
+
+
 }
