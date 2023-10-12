@@ -3,12 +3,16 @@
 package com.Sale_Campaign_Management_System.Service;
 
 import com.Sale_Campaign_Management_System.Model.Campaigns;
+import com.Sale_Campaign_Management_System.Model.PriceHistory;
 import com.Sale_Campaign_Management_System.Model.Product;
 import com.Sale_Campaign_Management_System.Model.dto.CompaignsDTO;
 import com.Sale_Campaign_Management_System.Model.dto.ProductSale;
 import com.Sale_Campaign_Management_System.Reposotry.CampaignsRepo;
+import com.Sale_Campaign_Management_System.Reposotry.PriceHistoryRepo;
 import com.Sale_Campaign_Management_System.Reposotry.ProductRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -17,12 +21,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+@EnableScheduling
 @Service
 public class CampaignsService {
     @Autowired
     CampaignsRepo campaignsRepo;
     @Autowired
     ProductRepo productRepo;
+    @Autowired
+    PriceHistoryRepo priceHistoryRepo;
 
     public Campaigns createCampaigns(CompaignsDTO campaigns) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // Update the date format pattern
@@ -45,11 +52,17 @@ public class CampaignsService {
             Optional<Product> productOptional = productRepo.findById(productId);
 
             if (productOptional.isPresent()) {
+                PriceHistory priceHistory= new PriceHistory();
                 Product product = productOptional.get();
                 campaigns1.setDiscount(productSale.getDiscount());
                 campaigns1.setProductId(productId);
                 campaigns1.setOldPrice(product.getCurrentPrice());
                 campaignsRepo.save(campaigns1);
+
+                priceHistory.setPrice(product.getCurrentPrice());
+                priceHistory.setProductId(product.getId());
+                priceHistoryRepo.save(priceHistory);
+
 
                 if (current.after(startDate) && current.before(endDate)) {
                     Optional<Product> product1 = productRepo.findById(campaigns1.getProductId());
@@ -60,28 +73,18 @@ public class CampaignsService {
                         productRepo.save(UpdateProduct);
                     }
                 }
-                else if (current.after(endDate)) {
-                    if (campaigns1 != null && campaigns1.getProductId() != null) {
-                        Optional<Product> product1 = productRepo.findById(campaigns1.getProductId());
-
-                        if (product1.isPresent()) {
-                            Product UpdateProduct = product1.get();
-                            Double currentprice = campaigns1.getOldPrice() + campaigns1.getDiscount();
-                            UpdateProduct.setCurrentPrice(currentprice);
-                            productRepo.save(UpdateProduct);
-                        }
-                    } else {
-                        System.out.println("Campaigns or Product ID not available.");
-                    }
-                }
 //                else if (current.after(endDate)) {
-//                    Optional<Product> product1 = productRepo.findById(campaigns1.getProductId());
+//                    if (campaigns1 != null && campaigns1.getProductId() != null) {
+//                        Optional<Product> product1 = productRepo.findById(campaigns1.getProductId());
 //
-//                    if (product1.isPresent()) {
-//                        Product UpdateProduct = product1.get();
-//                        Double currentprice = campaigns1.getOldPrice();
-//                        UpdateProduct.setCurrentPrice(currentprice);
-//                        productRepo.save(UpdateProduct);
+//                        if (product1.isPresent()) {
+//                            Product UpdateProduct = product1.get();
+//                            Double currentprice = campaigns1.getOldPrice() + campaigns1.getDiscount();
+//                            UpdateProduct.setCurrentPrice(currentprice);
+//                            productRepo.save(UpdateProduct);
+//                        }
+//                    } else {
+//                        System.out.println("Campaigns or Product ID not available.");
 //                    }
 //                }
             } else {
@@ -89,5 +92,27 @@ public class CampaignsService {
             }
         }
         return campaigns1;
+    }
+
+        @Scheduled(fixedRate = 60000) // This will run the method every minute, adjust the rate as needed
+//    @Scheduled(cron = "0 0 23 * * ?")
+    public void updateProductPrices() {
+        Date currentDate = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); //
+        String formattedDate = sdf.format(currentDate);
+        List<Campaigns> activeCampaigns = campaignsRepo.findActiveCampaigns(formattedDate);
+
+        for (Campaigns campaign : activeCampaigns) {
+            // Calculate new prices based on the campaign's old price and discount
+            Double currentPrice = campaign.getOldPrice();
+
+            // Update the product's price in the repository
+            Optional<Product> productOptional = productRepo.findById(campaign.getProductId());
+            if (productOptional.isPresent()) {
+                Product product = productOptional.get();
+                product.setCurrentPrice(currentPrice);
+                productRepo.save(product);
+            }
+        }
     }
 }
