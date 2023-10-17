@@ -32,7 +32,7 @@ public class CampaignsService {
     PriceHistoryRepo priceHistoryRepo;
 
     public Campaigns createCampaigns(CompaignsDTO campaigns) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // Update the date format pattern
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Date currentDate = new Date();
         String formattedDate = sdf.format(currentDate);
 
@@ -52,13 +52,13 @@ public class CampaignsService {
             Optional<Product> productOptional = productRepo.findById(productId);
 
             if (productOptional.isPresent()) {
-                PriceHistory priceHistory= new PriceHistory();
                 Product product = productOptional.get();
                 campaigns1.setDiscount(productSale.getDiscount());
                 campaigns1.setProductId(productId);
                 campaigns1.setOldPrice(product.getCurrentPrice());
                 campaignsRepo.save(campaigns1);
 
+                PriceHistory priceHistory= new PriceHistory();
                 priceHistory.setPrice(product.getCurrentPrice());
                 priceHistory.setProductId(product.getId());
                 priceHistoryRepo.save(priceHistory);
@@ -73,20 +73,6 @@ public class CampaignsService {
                         productRepo.save(UpdateProduct);
                     }
                 }
-//                else if (current.after(endDate)) {
-//                    if (campaigns1 != null && campaigns1.getProductId() != null) {
-//                        Optional<Product> product1 = productRepo.findById(campaigns1.getProductId());
-//
-//                        if (product1.isPresent()) {
-//                            Product UpdateProduct = product1.get();
-//                            Double currentprice = campaigns1.getOldPrice() + campaigns1.getDiscount();
-//                            UpdateProduct.setCurrentPrice(currentprice);
-//                            productRepo.save(UpdateProduct);
-//                        }
-//                    } else {
-//                        System.out.println("Campaigns or Product ID not available.");
-//                    }
-//                }
             } else {
                 System.out.println("Id not Found");
             }
@@ -94,13 +80,13 @@ public class CampaignsService {
         return campaigns1;
     }
 
-        @Scheduled(fixedRate = 60000) // This will run the method every minute, adjust the rate as needed
+        @Scheduled(fixedRate = 86400000) // This will run the method every minute, adjust the rate as needed
 //    @Scheduled(cron = "0 0 23 * * ?")
     public void updateProductPrices() {
         Date currentDate = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); //
         String formattedDate = sdf.format(currentDate);
-        List<Campaigns> activeCampaigns = campaignsRepo.findActiveCampaigns(formattedDate);
+        List<Campaigns> activeCampaigns = campaignsRepo.findActiveCampaigns("2023-10-19");
 
         for (Campaigns campaign : activeCampaigns) {
             // Calculate new prices based on the campaign's old price and discount

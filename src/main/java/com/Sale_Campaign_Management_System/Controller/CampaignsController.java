@@ -3,6 +3,7 @@ package com.Sale_Campaign_Management_System.Controller;
 import com.Sale_Campaign_Management_System.Model.Campaigns;
 import com.Sale_Campaign_Management_System.Model.dto.CompaignsDTO;
 import com.Sale_Campaign_Management_System.Service.CampaignsService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("CreateCampaign")
+@Tag(name = "Greeting", description = "Endpoints for greeting messages")
 public class CampaignsController {
 
     @Autowired
